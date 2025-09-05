@@ -40,14 +40,20 @@ export async function getReport(creators: string): Promise<ReportData> {
 
   try {
     const insiderActivityJson = JSON.stringify(insiderTrades);
+    let summaryResult, analysisResult;
 
-    const [summaryResult, analysisResult] = await Promise.all([
-      summarizeInsiderActivity({ insiderActivityData: insiderActivityJson }),
-      generateComparativeAnalysis({
-        currentData: JSON.stringify(mockCurrentData),
-        priorWeekData: JSON.stringify(mockPriorWeekData),
-      }),
-    ]);
+    if (process.env.GEMINI_API_KEY) {
+        [summaryResult, analysisResult] = await Promise.all([
+          summarizeInsiderActivity({ insiderActivityData: insiderActivityJson }),
+          generateComparativeAnalysis({
+            currentData: JSON.stringify(mockCurrentData),
+            priorWeekData: JSON.stringify(mockPriorWeekData),
+          }),
+        ]);
+    } else {
+        summaryResult = { summary: "This is a placeholder summary. Add a Gemini API key to .env to see real AI-powered analysis." };
+        analysisResult = { analysis: "This is a placeholder analysis. Add a Gemini API key to .env to see real AI-powered analysis." };
+    }
     
     if (!summaryResult.summary || !analysisResult.analysis) {
         throw new Error("Failed to get analysis from AI");
@@ -64,6 +70,9 @@ export async function getReport(creators: string): Promise<ReportData> {
     return report;
   } catch (error) {
     console.error('Error generating report:', error);
+    if (error instanceof Error && error.message.includes('GEMINI_API_KEY')) {
+        throw new Error('The Gemini API key is not configured. Please add it to your .env file.');
+    }
     throw new Error('Failed to generate report. The AI service might be unavailable.');
   }
 }
