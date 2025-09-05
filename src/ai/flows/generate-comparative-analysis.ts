@@ -10,11 +10,11 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { getInsiderTradingData } from '@/ai/tools/get-sec-data';
 import {z} from 'genkit';
 
 const GenerateComparativeAnalysisInputSchema = z.object({
-  currentData: z.string().describe('JSON string of current insider trading data.'),
-  priorWeekData: z.string().describe('JSON string of prior week insider trading data.'),
+  companyTickers: z.array(z.string()).describe('An array of company ticker symbols to get insider trading data for.'),
 });
 export type GenerateComparativeAnalysisInput = z.infer<typeof GenerateComparativeAnalysisInputSchema>;
 
@@ -29,7 +29,10 @@ export async function generateComparativeAnalysis(input: GenerateComparativeAnal
 
 const prompt = ai.definePrompt({
   name: 'generateComparativeAnalysisPrompt',
-  input: {schema: GenerateComparativeAnalysisInputSchema},
+  input: {schema: z.object({
+    currentData: z.string().describe('JSON string of current insider trading data.'),
+    priorWeekData: z.string().describe('JSON string of prior week insider trading data.'),
+  })},
   output: {schema: GenerateComparativeAnalysisOutputSchema},
   prompt: `You are an expert financial analyst. Analyze the following insider trading data to identify key trends and significant changes between the last 24 hours and the prior week.
 
@@ -44,9 +47,18 @@ const generateComparativeAnalysisFlow = ai.defineFlow(
     name: 'generateComparativeAnalysisFlow',
     inputSchema: GenerateComparativeAnalysisInputSchema,
     outputSchema: GenerateComparativeAnalysisOutputSchema,
+    tools: [getInsiderTradingData]
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input, streamingCallback) => {
+    const [currentData, priorWeekData] = await Promise.all([
+        getInsiderTradingData({ ...input, timePeriod: 'last_24_hours' }),
+        getInsiderTradingData({ ...input, timePeriod: 'prior_week' })
+    ]);
+
+    const {output} = await prompt({
+        currentData: JSON.stringify(currentData),
+        priorWeekData: JSON.stringify(priorWeekData)
+    });
     return output!;
   }
 );

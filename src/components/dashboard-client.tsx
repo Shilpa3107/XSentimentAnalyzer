@@ -44,8 +44,7 @@ export default function DashboardClient() {
     setReportData(null);
     try {
       const data = await getReport(values.creators);
-      const chartData = generateChartData();
-      setReportData({ ...data, chartData });
+      setReportData(data);
     } catch (error) {
       console.error(error);
       toast({

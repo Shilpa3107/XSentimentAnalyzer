@@ -3,7 +3,8 @@
 
 import { generateComparativeAnalysis } from '@/ai/flows/generate-comparative-analysis';
 import { summarizeInsiderActivity } from '@/ai/flows/summarize-insider-activity';
-import { insiderTrades, recentFilings, mockCurrentData, mockPriorWeekData } from '@/lib/mock-data';
+import { generateChartData } from '@/lib/mock-data';
+import { getSECData } from '@/ai/tools/get-sec-data';
 
 export interface ReportData {
   summary: string;
@@ -32,38 +33,40 @@ export interface ReportData {
   }[];
 }
 
-export async function getReport(creators: string): Promise<Omit<ReportData, 'chartData'>> {
-  // In a real app, `creators` would be used to filter data.
-  // Here, we proceed with mock data.
-  
+export async function getReport(creators: string): Promise<ReportData> {
   await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
 
   try {
-    const insiderActivityJson = JSON.stringify(insiderTrades);
-    let summaryResult, analysisResult;
+    let summaryResult, analysisResult, filings, trades;
 
     if (process.env.GEMINI_API_KEY) {
-        [summaryResult, analysisResult] = await Promise.all([
-          summarizeInsiderActivity({ insiderActivityData: insiderActivityJson }),
-          generateComparativeAnalysis({
-            currentData: JSON.stringify(mockCurrentData),
-            priorWeekData: JSON.stringify(mockPriorWeekData),
-          }),
-        ]);
+      const [summary, analysis, secData] = await Promise.all([
+        summarizeInsiderActivity({ companyTickers: ['TSLA', 'MSFT', 'AAPL', 'GOOGL'] }),
+        generateComparativeAnalysis({ companyTickers: ['TSLA', 'MSFT', 'AAPL', 'GOOGL'] }),
+        getSECData({ companyTickers: ['TSLA', 'MSFT', 'AAPL', 'GOOGL'] })
+      ]);
+      summaryResult = summary.summary;
+      analysisResult = analysis.analysis;
+      filings = secData.filings;
+      trades = summary.trades;
     } else {
-        summaryResult = { summary: "This is a placeholder summary. Add a Gemini API key to .env to see real AI-powered analysis." };
-        analysisResult = { analysis: "This is a placeholder analysis. Add a Gemini API key to .env to see real AI-powered analysis." };
+      summaryResult = "This is a placeholder summary. Add a Gemini API key to .env to see real AI-powered analysis.";
+      analysisResult = "This is a placeholder analysis. Add a Gemini API key to .env to see real AI-powered analysis.";
+      const secData = await getSECData({ companyTickers: [] });
+      filings = secData.filings;
+      trades = secData.trades;
     }
     
-    if (!summaryResult.summary || !analysisResult.analysis) {
+    if (!summaryResult || !analysisResult) {
         throw new Error("Failed to get analysis from AI");
     }
 
-    const report: Omit<ReportData, 'chartData'> = {
-      summary: summaryResult.summary,
-      analysis: analysisResult.analysis,
-      filings: recentFilings,
-      trades: insiderTrades,
+    const report: ReportData = {
+      summary: summaryResult,
+      analysis: analysisResult,
+      filings: filings,
+      trades: trades,
+      chartData: generateChartData(),
     };
     
     return report;

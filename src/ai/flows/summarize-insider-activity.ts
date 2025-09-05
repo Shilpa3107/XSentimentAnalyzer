@@ -9,14 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { getInsiderTradingData } from '@/ai/tools/get-sec-data';
+import { insiderTradeSchema } from '@/ai/schemas';
 import {z} from 'genkit';
 
 const SummarizeInsiderActivityInputSchema = z.object({
-  insiderActivityData: z
-    .string()
-    .describe(
-      'The insider activity data retrieved from the SEC website in JSON format.'
-    ),
+  companyTickers: z.array(z.string()).describe('An array of company ticker symbols to get insider trading data for.'),
 });
 export type SummarizeInsiderActivityInput =
   z.infer<typeof SummarizeInsiderActivityInputSchema>;
@@ -27,6 +25,7 @@ const SummarizeInsiderActivityOutputSchema = z.object({
     .describe(
       'A concise summary of the most active insider trading activities detected today.'
     ),
+  trades: z.array(insiderTradeSchema).describe('The most active insider trades in the last 24 hours.')
 });
 export type SummarizeInsiderActivityOutput =
   z.infer<typeof SummarizeInsiderActivityOutputSchema>;
@@ -39,8 +38,8 @@ export async function summarizeInsiderActivity(
 
 const prompt = ai.definePrompt({
   name: 'summarizeInsiderActivityPrompt',
-  input: {schema: SummarizeInsiderActivityInputSchema},
-  output: {schema: SummarizeInsiderActivityOutputSchema},
+  input: {schema: z.object({ insiderActivityData: z.string() })},
+  output: {schema: z.object({ summary: z.string() })},
   prompt: `You are an expert financial analyst.
 
   You will receive insider trading activity data and provide a concise summary of the most active insider trading activities detected today.
@@ -55,9 +54,15 @@ const summarizeInsiderActivityFlow = ai.defineFlow(
     name: 'summarizeInsiderActivityFlow',
     inputSchema: SummarizeInsiderActivityInputSchema,
     outputSchema: SummarizeInsiderActivityOutputSchema,
+    tools: [getInsiderTradingData]
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input, streamingCallback) => {
+    const trades = await getInsiderTradingData({ ...input, timePeriod: 'last_24_hours' });
+    const {output} = await prompt({insiderActivityData: JSON.stringify(trades)});
+
+    return {
+      summary: output!.summary,
+      trades: trades,
+    }
   }
 );
