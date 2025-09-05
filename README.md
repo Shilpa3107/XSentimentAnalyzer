@@ -23,8 +23,8 @@ Follow these instructions to get the project up and running on your local machin
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
-    cd <repository-directory>
+    git clone https://github.com/Shilpa3107/XSentimentAnalyzer
+    cd XSentimentAnalyzer
     ```
 
 2.  **Install dependencies:**
