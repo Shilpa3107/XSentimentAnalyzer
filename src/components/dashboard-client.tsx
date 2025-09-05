@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,6 +14,7 @@ import { getReport, type ReportData } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { generateChartData } from '@/lib/mock-data';
 
 const formSchema = z.object({
   creators: z.string().min(1, {
@@ -38,7 +39,8 @@ export default function DashboardClient() {
     setReportData(null);
     try {
       const data = await getReport(values.creators);
-      setReportData(data);
+      const chartData = generateChartData();
+      setReportData({ ...data, chartData });
     } catch (error) {
       console.error(error);
       toast({

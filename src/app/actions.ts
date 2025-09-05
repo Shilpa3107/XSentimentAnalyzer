@@ -3,7 +3,7 @@
 
 import { generateComparativeAnalysis } from '@/ai/flows/generate-comparative-analysis';
 import { summarizeInsiderActivity } from '@/ai/flows/summarize-insider-activity';
-import { insiderTrades, recentFilings, generateChartData, mockCurrentData, mockPriorWeekData } from '@/lib/mock-data';
+import { insiderTrades, recentFilings, mockCurrentData, mockPriorWeekData } from '@/lib/mock-data';
 
 export interface ReportData {
   summary: string;
@@ -32,7 +32,7 @@ export interface ReportData {
   }[];
 }
 
-export async function getReport(creators: string): Promise<ReportData> {
+export async function getReport(creators: string): Promise<Omit<ReportData, 'chartData'>> {
   // In a real app, `creators` would be used to filter data.
   // Here, we proceed with mock data.
   
@@ -59,10 +59,9 @@ export async function getReport(creators: string): Promise<ReportData> {
         throw new Error("Failed to get analysis from AI");
     }
 
-    const report: ReportData = {
+    const report: Omit<ReportData, 'chartData'> = {
       summary: summaryResult.summary,
       analysis: analysisResult.analysis,
-      chartData: generateChartData(),
       filings: recentFilings,
       trades: insiderTrades,
     };
