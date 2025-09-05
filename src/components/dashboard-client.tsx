@@ -26,6 +26,11 @@ export default function DashboardClient() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,6 +56,27 @@ export default function DashboardClient() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  if (!isMounted) {
+    return (
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Monitor X Creators</CardTitle>
+                    <CardDescription>
+                        Enter X creator handles separated by commas to analyze their related SEC filings and insider trading activity.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full sm:w-auto px-8" />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
   }
 
   return (
