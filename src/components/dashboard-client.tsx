@@ -1,11 +1,7 @@
 
 'use client';
 
-<<<<<<< HEAD
 import { useState, useEffect } from 'react';
-=======
-import { useState } from 'react';
->>>>>>> af44e60 (Initial prototype)
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,14 +10,11 @@ import ReportDisplay from '@/components/report-display';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getReport, type ReportData } from '@/app/actions';
+import { getReport } from '@/app/actions';
+import type { ReportData } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-<<<<<<< HEAD
-import { generateChartData } from '@/lib/mock-data';
-=======
->>>>>>> af44e60 (Initial prototype)
 
 const formSchema = z.object({
   creators: z.string().min(1, {
@@ -33,14 +26,11 @@ export default function DashboardClient() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-<<<<<<< HEAD
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-=======
->>>>>>> af44e60 (Initial prototype)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,7 +57,6 @@ export default function DashboardClient() {
     }
   }
 
-<<<<<<< HEAD
   if (!isMounted) {
     return (
         <div className="space-y-8">
@@ -89,8 +78,6 @@ export default function DashboardClient() {
     );
   }
 
-=======
->>>>>>> af44e60 (Initial prototype)
   return (
     <div className="space-y-8">
       <Card>

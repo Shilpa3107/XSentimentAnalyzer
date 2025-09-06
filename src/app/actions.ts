@@ -16,7 +16,7 @@ export async function getReport(creators: string): Promise<ReportData> {
   await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
 
   try {
-    let summaryResult, analysisResult, filings, trades;
+    let summary, analysis, filings, trades;
 
     if (process.env.GEMINI_API_KEY) {
       const [summaryResponse, analysisResponse, secData] = await Promise.all([
@@ -29,25 +29,23 @@ export async function getReport(creators: string): Promise<ReportData> {
         throw new Error("Failed to get analysis from AI");
       }
 
-      summaryResult = summaryResponse.summary;
-      analysisResult = analysisResponse.analysis;
+      summary = summaryResponse.summary;
+      analysis = analysisResponse.analysis;
       filings = secData.filings;
       trades = summaryResponse.trades;
 
     } else {
       // Use mock data and placeholder summaries if no API key is present
-      const [secData] = await Promise.all([
-        getSECData({ companyTickers: [] })
-      ]);
-      summaryResult = "This is a placeholder summary. Add a Gemini API key to .env to see real AI-powered analysis.";
-      analysisResult = "This is a placeholder analysis. Add a Gemini API key to .env to see real AI-powered analysis.";
+      const secData = await getSECData({ companyTickers: [] });
+      summary = "This is a placeholder summary. Add a Gemini API key to .env to see real AI-powered analysis.";
+      analysis = "This is a placeholder analysis. Add a Gemini API key to .env to see real AI-powered analysis.";
       filings = secData.filings;
       trades = secData.trades;
     }
     
     const report: ReportData = {
-      summary: summaryResult,
-      analysis: analysisResult,
+      summary: summary,
+      analysis: analysis,
       filings: filings,
       trades: trades,
       chartData: generateChartData(),

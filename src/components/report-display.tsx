@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { ReportData } from '@/app/actions';
+import type { ReportData } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,11 +28,8 @@ const chartConfig = {
 
 export default function ReportDisplay({ reportData }: ReportDisplayProps) {
   const { summary, analysis, chartData, filings, trades } = reportData;
-<<<<<<< HEAD
   
   if (!chartData) return null;
-=======
->>>>>>> af44e60 (Initial prototype)
 
   return (
     <div className="grid gap-8 animate-in fade-in-50">
