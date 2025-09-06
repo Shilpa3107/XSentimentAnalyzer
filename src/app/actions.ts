@@ -3,64 +3,48 @@
 
 import { generateComparativeAnalysis } from '@/ai/flows/generate-comparative-analysis';
 import { summarizeInsiderActivity } from '@/ai/flows/summarize-insider-activity';
-import { generateChartData } from '@/lib/mock-data';
 import { getSECData } from '@/ai/tools/get-sec-data';
+import { generateChartData } from '@/lib/mock-data';
+import { ReportData } from '@/lib/types';
 
-export interface ReportData {
-  summary: string;
-  analysis: string;
-  chartData: {
-    name: string;
-    'Last 24h': number;
-    'Prior Week': number;
-  }[];
-  filings: {
-    id: string;
-    creator: string;
-    filingType: string;
-    date: string;
-    link: string;
-  }[];
-  trades: {
-    id: string;
-    insiderName: string;
-    relation: string;
-    lastReported: string;
-    transactionType: 'Buy' | 'Sell';
-    value: string;
-    shares: string;
-    company: string;
-  }[];
-}
 
 export async function getReport(creators: string): Promise<ReportData> {
+  // In a real app, `creators` would be used to filter data.
+  // For now, we'll use a predefined list of tickers.
+  const companyTickers = ['TSLA', 'MSFT', 'AAPL', 'GOOGL'];
+
   await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
 
   try {
     let summaryResult, analysisResult, filings, trades;
 
     if (process.env.GEMINI_API_KEY) {
-      const [summary, analysis, secData] = await Promise.all([
-        summarizeInsiderActivity({ companyTickers: ['TSLA', 'MSFT', 'AAPL', 'GOOGL'] }),
-        generateComparativeAnalysis({ companyTickers: ['TSLA', 'MSFT', 'AAPL', 'GOOGL'] }),
-        getSECData({ companyTickers: ['TSLA', 'MSFT', 'AAPL', 'GOOGL'] })
+      const [summaryResponse, analysisResponse, secData] = await Promise.all([
+        summarizeInsiderActivity({ companyTickers }),
+        generateComparativeAnalysis({ companyTickers }),
+        getSECData({ companyTickers })
       ]);
-      summaryResult = summary.summary;
-      analysisResult = analysis.analysis;
+      
+      if (!summaryResponse.summary || !analysisResponse.analysis) {
+        throw new Error("Failed to get analysis from AI");
+      }
+
+      summaryResult = summaryResponse.summary;
+      analysisResult = analysisResponse.analysis;
       filings = secData.filings;
-      trades = summary.trades;
+      trades = summaryResponse.trades;
+
     } else {
+      // Use mock data and placeholder summaries if no API key is present
+      const [secData] = await Promise.all([
+        getSECData({ companyTickers: [] })
+      ]);
       summaryResult = "This is a placeholder summary. Add a Gemini API key to .env to see real AI-powered analysis.";
       analysisResult = "This is a placeholder analysis. Add a Gemini API key to .env to see real AI-powered analysis.";
-      const secData = await getSECData({ companyTickers: [] });
       filings = secData.filings;
       trades = secData.trades;
     }
     
-    if (!summaryResult || !analysisResult) {
-        throw new Error("Failed to get analysis from AI");
-    }
-
     const report: ReportData = {
       summary: summaryResult,
       analysis: analysisResult,

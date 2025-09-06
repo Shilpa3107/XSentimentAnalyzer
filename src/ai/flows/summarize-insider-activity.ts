@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -56,7 +57,7 @@ const summarizeInsiderActivityFlow = ai.defineFlow(
     outputSchema: SummarizeInsiderActivityOutputSchema,
     tools: [getInsiderTradingData]
   },
-  async (input, streamingCallback) => {
+  async (input) => {
     const trades = await getInsiderTradingData({ ...input, timePeriod: 'last_24_hours' });
     const {output} = await prompt({insiderActivityData: JSON.stringify(trades)});
 

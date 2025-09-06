@@ -1,4 +1,4 @@
-// src/ai/flows/generate-comparative-analysis.ts
+
 'use server';
 
 /**
@@ -49,7 +49,7 @@ const generateComparativeAnalysisFlow = ai.defineFlow(
     outputSchema: GenerateComparativeAnalysisOutputSchema,
     tools: [getInsiderTradingData]
   },
-  async (input, streamingCallback) => {
+  async (input) => {
     const [currentData, priorWeekData] = await Promise.all([
         getInsiderTradingData({ ...input, timePeriod: 'last_24_hours' }),
         getInsiderTradingData({ ...input, timePeriod: 'prior_week' })

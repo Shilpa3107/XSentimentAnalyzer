@@ -28,8 +28,11 @@ const chartConfig = {
 
 export default function ReportDisplay({ reportData }: ReportDisplayProps) {
   const { summary, analysis, chartData, filings, trades } = reportData;
+<<<<<<< HEAD
   
   if (!chartData) return null;
+=======
+>>>>>>> af44e60 (Initial prototype)
 
   return (
     <div className="grid gap-8 animate-in fade-in-50">
