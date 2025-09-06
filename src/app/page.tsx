@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 import DashboardClient from "@/components/dashboard-client";
 
@@ -27,4 +28,8 @@ export default function Home() {
       </main>
     </div>
   );
+=======
+export default function Home() {
+  return <></>;
+>>>>>>> 7147252 (Initialized workspace)
 }
