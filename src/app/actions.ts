@@ -40,7 +40,7 @@ export async function getReport(creators: string): Promise<ReportData> {
       summary = "This is a placeholder summary. Add a Gemini API key to .env to see real AI-powered analysis.";
       analysis = "This is a placeholder analysis. Add a Gemini API key to .env to see real AI-powered analysis.";
       filings = secData.filings;
-      trades = secData.trades;
+      trades = secData.trades.slice(0, 2); // Use a subset for the placeholder
     }
     
     const report: ReportData = {
